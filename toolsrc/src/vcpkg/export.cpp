@@ -22,8 +22,8 @@ namespace vcpkg::Export
     using Dependencies::RequestType;
     using Install::InstallDir;
 
-    static std::string create_nuspec_file_contents(const std::string& port,
-                                                   const fs::path& ports_path,
+    static std::string create_nuspec_file_contents(const std::vector<PackageSpec>& specs,
+                                                   const VcpkgPaths& paths,
                                                    const std::string& raw_exported_dir,
                                                    const std::string& targets_redirect_path,
                                                    const std::string& nuget_id,
@@ -48,7 +48,10 @@ namespace vcpkg::Export
 )";
 
         auto& fs = Files::get_real_filesystem();
-        const fs::path& port_path = ports_path / port;
+        const std::string& port = specs.at(0).name();
+        const auto& triplet = specs.at(0).triplet();
+        bool is_static = triplet.to_string().ends_with("-static");
+        const fs::path& port_path = paths.ports / port;
         std::string port_scripts;
         if (fs.exists(port_path / "port.targets"))
         {
@@ -56,15 +59,21 @@ namespace vcpkg::Export
                 R"(        <file src="@PORT_PATH@\port.targets" target="build\native\@NUGET_ID@.targets" />
 )";
         }
+        else
+        {
+            port_scripts =
+                R"(        <file src="@TARGETS_REDIRECT_PATH@" target="build\native\@NUGET_ID@.targets" />
+)";
+        }
         if (fs.exists(port_path / "port.props"))
         {
             port_scripts += R"(        <file src="@PORT_PATH@\port.props" target="build\native\@NUGET_ID@.props" />
 )";
         }
-        if (port_scripts.empty())
+        else if (is_static)
         {
-            port_scripts =
-                R"(        <file src="@TARGETS_REDIRECT_PATH@" target="build\native\@NUGET_ID@.targets" />
+            port_scripts +=
+                R"(        <file src="@BUILDSYSTEMS_MSBUILD_DIR@\vcpkg-static.props" target="build\native\@NUGET_ID@.props" />
 )";
         }
 
@@ -77,6 +86,8 @@ namespace vcpkg::Export
             Strings::replace_all(std::move(nuspec_file_content), "@RAW_EXPORTED_DIR@", raw_exported_dir);
         nuspec_file_content =
             Strings::replace_all(std::move(nuspec_file_content), "@TARGETS_REDIRECT_PATH@", targets_redirect_path);
+        nuspec_file_content = Strings::replace_all(
+            std::move(nuspec_file_content), "@BUILDSYSTEMS_MSBUILD_DIR@", paths.buildsystems_msbuild.string());
         return nuspec_file_content;
     }
 
@@ -169,9 +180,8 @@ namespace vcpkg::Export
 
         fs.write_contents(targets_redirect, targets_redirect_content, VCPKG_LINE_INFO);
 
-        const std::string& port = specs.at(0).name();
         const std::string nuspec_file_content = create_nuspec_file_contents(
-            port, paths.ports, raw_exported_dir.string(), targets_redirect.string(), nuget_id, nuget_version);
+            specs, paths, raw_exported_dir.string(), targets_redirect.string(), nuget_id, nuget_version);
         const fs::path nuspec_file_path = paths.buildsystems / "tmp" / "vcpkg.export.nuspec";
         fs.write_contents(nuspec_file_path, nuspec_file_content, VCPKG_LINE_INFO);
 

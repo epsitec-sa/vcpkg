@@ -88,7 +88,8 @@ namespace vcpkg
 
         paths.tools = paths.downloads / "tools";
         paths.buildsystems = paths.scripts / "buildsystems";
-        paths.buildsystems_msbuild_targets = paths.buildsystems / "msbuild" / "vcpkg.targets";
+        paths.buildsystems_msbuild = paths.buildsystems / "msbuild";
+        paths.buildsystems_msbuild_targets = paths.buildsystems_msbuild / "vcpkg.targets";
 
         paths.vcpkg_dir = paths.installed / "vcpkg";
         paths.vcpkg_dir_status_file = paths.vcpkg_dir / "status";
