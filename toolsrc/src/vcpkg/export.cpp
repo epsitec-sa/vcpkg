@@ -22,7 +22,9 @@ namespace vcpkg::Export
     using Dependencies::RequestType;
     using Install::InstallDir;
 
-    static std::string create_nuspec_file_contents(const std::string& raw_exported_dir,
+    static std::string create_nuspec_file_contents(const std::string& port,
+                                                   const fs::path& ports_path,
+                                                   const std::string& raw_exported_dir,
                                                    const std::string& targets_redirect_path,
                                                    const std::string& nuget_id,
                                                    const std::string& nupkg_version)
@@ -41,12 +43,35 @@ namespace vcpkg::Export
         <file src="@RAW_EXPORTED_DIR@\installed\**" target="installed" />
         <file src="@RAW_EXPORTED_DIR@\scripts\**" target="scripts" />
         <file src="@RAW_EXPORTED_DIR@\.vcpkg-root" target="" />
-        <file src="@TARGETS_REDIRECT_PATH@" target="build\native\@NUGET_ID@.targets" />
-    </files>
+@PORT_SCRIPTS@    </files>
 </package>
 )";
 
-        std::string nuspec_file_content = Strings::replace_all(CONTENT_TEMPLATE, "@NUGET_ID@", nuget_id);
+        auto& fs = Files::get_real_filesystem();
+        const fs::path& port_path = ports_path / port;
+        std::string port_scripts;
+        if (fs.exists(port_path / "port.targets"))
+        {
+            port_scripts =
+                R"(        <file src="@PORT_PATH@\port.targets" target="build\native\@NUGET_ID@.targets" />
+)";
+        }
+        if (fs.exists(port_path / "port.props"))
+        {
+            port_scripts += R"(        <file src="@PORT_PATH@\port.props" target="build\native\@NUGET_ID@.props" />
+)";
+        }
+        if (port_scripts.empty())
+        {
+            port_scripts =
+                R"(        <file src="@TARGETS_REDIRECT_PATH@" target="build\native\@NUGET_ID@.targets" />
+)";
+        }
+
+        std::string nuspec_file_content;
+        nuspec_file_content = Strings::replace_all(CONTENT_TEMPLATE, "@PORT_SCRIPTS@", port_scripts);
+        nuspec_file_content = Strings::replace_all(std::move(nuspec_file_content), "@PORT_PATH@", port_path.string());
+        nuspec_file_content = Strings::replace_all(std::move(nuspec_file_content), "@NUGET_ID@", nuget_id);
         nuspec_file_content = Strings::replace_all(std::move(nuspec_file_content), "@VERSION@", nupkg_version);
         nuspec_file_content =
             Strings::replace_all(std::move(nuspec_file_content), "@RAW_EXPORTED_DIR@", raw_exported_dir);
@@ -125,6 +150,7 @@ namespace vcpkg::Export
     }
 
     static fs::path do_nuget_export(const VcpkgPaths& paths,
+                                    const std::vector<PackageSpec>& specs,
                                     const std::string& nuget_id,
                                     const std::string& nuget_version,
                                     const fs::path& raw_exported_dir,
@@ -143,8 +169,9 @@ namespace vcpkg::Export
 
         fs.write_contents(targets_redirect, targets_redirect_content, VCPKG_LINE_INFO);
 
-        const std::string nuspec_file_content =
-            create_nuspec_file_contents(raw_exported_dir.string(), targets_redirect.string(), nuget_id, nuget_version);
+        const std::string& port = specs.at(0).name();
+        const std::string nuspec_file_content = create_nuspec_file_contents(
+            port, paths.ports, raw_exported_dir.string(), targets_redirect.string(), nuget_id, nuget_version);
         const fs::path nuspec_file_path = paths.buildsystems / "tmp" / "vcpkg.export.nuspec";
         fs.write_contents(nuspec_file_path, nuspec_file_content, VCPKG_LINE_INFO);
 
@@ -446,7 +473,7 @@ namespace vcpkg::Export
             const std::string nuget_id = opts.maybe_nuget_id.value_or(raw_exported_dir_path.filename().string());
             const std::string nuget_version = opts.maybe_nuget_version.value_or("1.0.0");
             const fs::path output_path =
-                do_nuget_export(paths, nuget_id, nuget_version, raw_exported_dir_path, export_to_path);
+                do_nuget_export(paths, opts.specs, nuget_id, nuget_version, raw_exported_dir_path, export_to_path);
             System::print2(System::Color::success, "NuGet package exported at: ", output_path.u8string(), "\n");
 
             System::printf(R"(
