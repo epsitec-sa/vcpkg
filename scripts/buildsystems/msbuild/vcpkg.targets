@@ -113,4 +113,18 @@
       <ReferenceCopyLocalPaths Include="@(VcpkgAppLocalDLLs)" />
     </ItemGroup>
   </Target>
+
+  <Target Name="VcPkgTrace" BeforeTargets="Build" Condition="'$(VcpkgTrace)' == 'true'">
+    <Message Importance="high" Text="UseLldLink                   = '$(UseLldLink)'" />
+    <Message Importance="high" Text="VcpkgEnabled                 = '$(VcpkgEnabled)'" />
+    <Message Importance="high" Text="VcpkgTriplet                 = '$(VcpkgTriplet)'" />
+    <Message Importance="high" Text="VcpkgConfiguration           = '$(VcpkgConfiguration)'" />
+    <Message Importance="high" Text="VcpkgNormalizedConfiguration = '$(VcpkgNormalizedConfiguration)'" />
+    <Message Importance="high" Text="VcpkgApplocalDeps            = '$(VcpkgApplocalDeps)'" />
+    <Message Importance="high" Text="VcpkgAutoLink                = '$(VcpkgAutoLink)'" />
+    <Message Importance="high" Text="VcpkgRoot                    = '%(VcpkgRoot.Identity)'" />
+    <Message Importance="high" Text="Link.AdditionalDependencies                  = '%(Link.AdditionalDependencies)'" />
+    <Message Importance="high" Text="ClCompile.AdditionalIncludeDirectories       = '%(ClCompile.AdditionalIncludeDirectories)'" />
+    <Message Importance="high" Text="ResourceCompile.AdditionalIncludeDirectories = '%(ResourceCompile.AdditionalIncludeDirectories)'" />
+  </Target>                                                                         '
 </Project>
