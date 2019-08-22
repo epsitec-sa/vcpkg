@@ -27,11 +27,18 @@
 
   <!-- Define protoc command path and properties -->
   <PropertyGroup>
-    <GrpcPluginPath>$(VcpkgRoot)tools\grpc\grpc_cpp_plugin.exe</GrpcPluginPath>
-    <ProtocCommand>"$(VcpkgRoot)tools\protobuf\protoc.exe" -I "$(VcpkgRoot)include"</ProtocCommand>
     <ProtocOutDir>$(ProjectDir)$(IntDir)</ProtocOutDir>
     <ProtocOutDir_>$(ProtocOutDir.TrimEnd(\/))</ProtocOutDir_>
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(VcpkgEnabled)' == 'true'">
+    <Protobuf>
+      <VcpkgRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), .vcpkg-root))\installed\$(VcpkgTriplet)\</VcpkgRoot>
+    </Protobuf>
+    <Protobuf>
+      <GrpcPluginPath>%(VcpkgRoot)tools\grpc\grpc_cpp_plugin.exe</GrpcPluginPath>
+      <ProtocCommand>"%(VcpkgRoot)tools\protobuf\protoc.exe" -I "%(VcpkgRoot)include"</ProtocCommand>
+    </Protobuf>
+  </ItemDefinitionGroup>
 
   <!-- Initialize additional protobuf metadata -->
   <Target Name="ProtobufInit">
@@ -57,16 +64,20 @@
       <ProtocPathOption>--proto_path="$(ProtocPathOption.TrimEnd(\/))"</ProtocPathOption>
     </PropertyGroup>
     <!-- Generate the grpc code -->
-    <Exec Command='$(ProtocCommand) $(ProtocPathOption) --grpc_out="$(ProtocOutDir_)" --plugin=protoc-gen-grpc="$(GrpcPluginPath)" "%(Protobuf.FullPath)"' />
+    <Exec Command='%(Protobuf.ProtocCommand) $(ProtocPathOption) --grpc_out="$(ProtocOutDir_)" --plugin=protoc-gen-grpc="%(GrpcPluginPath)" "%(FullPath)"' />
     <Message Importance="high" Text='%(Protobuf.FileName)%(Extension) -> %(Filename).grpc.pb.cc' />
     <!-- Generate the protobuf code -->
-    <Exec Command='$(ProtocCommand) $(ProtocPathOption) --cpp_out="$(ProtocOutDir_)" "%(Protobuf.FullPath)"' />
+    <Exec Command='%(Protobuf.ProtocCommand) $(ProtocPathOption) --cpp_out="$(ProtocOutDir_)" "%(FullPath)"' />
     <Message Importance="high" Text='%(Protobuf.FileName)%(Extension) -> %(Filename).pb.cc' />
 
     <!-- Add generated source files to the C++ compiler sources -->
     <ItemGroup>
-      <ClCompile Include="%(Protobuf.GrpcCppOutPath)" />
-      <ClCompile Include="%(Protobuf.CppOutPath)" />
+      <ClCompile Include="%(Protobuf.GrpcCppOutPath)">
+        <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      </ClCompile>
+      <ClCompile Include="%(Protobuf.CppOutPath)">
+        <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      </ClCompile>
     </ItemGroup>
   </Target>
   
