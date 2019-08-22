@@ -126,5 +126,5 @@
     <Message Importance="high" Text="Link.AdditionalDependencies                  = '%(Link.AdditionalDependencies)'" />
     <Message Importance="high" Text="ClCompile.AdditionalIncludeDirectories       = '%(ClCompile.AdditionalIncludeDirectories)'" />
     <Message Importance="high" Text="ResourceCompile.AdditionalIncludeDirectories = '%(ResourceCompile.AdditionalIncludeDirectories)'" />
-  </Target>                                                                         '
+  </Target>
 </Project>
