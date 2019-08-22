@@ -3,9 +3,9 @@ REM This script should be written in bash instead of batch...
 
 REM When incrementing the versions, ensure to change the versions
 REM in the port CONTROL files too.
-set OPENSSL_WINDOWS_VERSION=1.0.2.3
-set ZLIB_VERSION=1.2.11.7
-set GRPC_PKG_VERSION=3
+set OPENSSL_WINDOWS_VERSION=1.0.2.4
+set ZLIB_VERSION=1.2.11.8
+set GRPC_PKG_VERSION=4
 set GRPC_VERSION=1.22.0.%GRPC_PKG_VERSION%
 
 REM remove previous builds
