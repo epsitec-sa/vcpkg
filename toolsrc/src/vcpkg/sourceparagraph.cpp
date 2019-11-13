@@ -1,9 +1,9 @@
 #include "pch.h"
 
+#include <vcpkg/logicexpression.h>
 #include <vcpkg/packagespec.h>
 #include <vcpkg/sourceparagraph.h>
 #include <vcpkg/triplet.h>
-#include <vcpkg/logicexpression.h>
 
 #include <vcpkg/base/checks.h>
 #include <vcpkg/base/expected.h>
@@ -26,6 +26,7 @@ namespace vcpkg
         static const std::string SUPPORTS = "Supports";
         static const std::string VERSION = "Version";
         static const std::string HOMEPAGE = "Homepage";
+        static const std::string TYPE = "Type";
     }
 
     static Span<const std::string> get_list_of_valid_fields()
@@ -37,6 +38,7 @@ namespace vcpkg
             SourceParagraphFields::MAINTAINER,
             SourceParagraphFields::BUILD_DEPENDS,
             SourceParagraphFields::HOMEPAGE,
+            SourceParagraphFields::TYPE,
         };
 
         return valid_fields;
@@ -223,26 +225,25 @@ namespace vcpkg
         std::vector<std::string> ret;
         for (auto&& dep : deps)
         {
-			const auto & qualifier = dep.qualifier;
-			if (qualifier.empty() || evaluate_expression(qualifier, t.canonical_name()))
-			{
-				ret.emplace_back(dep.name());
-			}
+            const auto& qualifier = dep.qualifier;
+            if (qualifier.empty() || evaluate_expression(qualifier, t.canonical_name()))
+            {
+                ret.emplace_back(dep.name());
+            }
         }
         return ret;
     }
 
-    std::vector<Features> filter_dependencies_to_features(const std::vector<vcpkg::Dependency>& deps,
-                                                          const Triplet& t)
+    std::vector<Features> filter_dependencies_to_features(const std::vector<vcpkg::Dependency>& deps, const Triplet& t)
     {
         std::vector<Features> ret;
         for (auto&& dep : deps)
         {
-			const auto & qualifier = dep.qualifier;
-			if (qualifier.empty() || evaluate_expression(qualifier, t.canonical_name()))
-			{
-				ret.emplace_back(dep.depend);
-			}
+            const auto& qualifier = dep.qualifier;
+            if (qualifier.empty() || evaluate_expression(qualifier, t.canonical_name()))
+            {
+                ret.emplace_back(dep.depend);
+            }
         }
         return ret;
     }

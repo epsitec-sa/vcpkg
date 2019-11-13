@@ -3,8 +3,8 @@ include(vcpkg_common_functions)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO catchorg/Catch2
-    REF v2.9.1
-    SHA512 ea18eef1fece72518c8a46b89727f5d0545a15038957087324abe6421c682693379476ff46106132f080677ebcc1c9ead51a9cf25dced3bb576a33e4f6fae4f6
+    REF v2.10.1
+    SHA512 7806dc3cd5b7ecb51ae5f4e0e4c6ca07943af6038a5a6bdd6825951018f1a79baa76ab37f15a660b7c420ec5b0d3ea19ae95bd8f380f56588850db6566958d00
     HEAD_REF master
 )
 
@@ -27,4 +27,4 @@ if(NOT EXISTS ${CURRENT_PACKAGES_DIR}/include/catch2/catch.hpp)
 endif()
 
 file(WRITE ${CURRENT_PACKAGES_DIR}/include/catch.hpp "#include <catch2/catch.hpp>")
-file(INSTALL ${SOURCE_PATH}/LICENSE.txt DESTINATION ${CURRENT_PACKAGES_DIR}/share/catch2 RENAME copyright)
+file(INSTALL ${SOURCE_PATH}/LICENSE.txt DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
