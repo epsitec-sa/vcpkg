@@ -5,8 +5,8 @@ REM When incrementing the versions, ensure to change the versions
 REM in the port CONTROL files too.
 set OPENSSL_WINDOWS_VERSION=1.0.2.4
 set ZLIB_VERSION=1.2.11.8
-set GRPC_PKG_VERSION=4
-set GRPC_VERSION=1.22.0.%GRPC_PKG_VERSION%
+set GRPC_PKG_VERSION=1
+set GRPC_VERSION=1.23.1.%GRPC_PKG_VERSION%
 
 REM remove previous builds
 rd /s /q installed
@@ -26,8 +26,8 @@ echo Please, check for errors first
 pause
 
 REM publish zlib and openssl-windows packages on nuget.org repository
-nuget push epsitec-openssl.%OPENSSL_WINDOWS_VERSION%.nupkg -Source https://api.nuget.org/v3/index.json
-nuget push epsitec-zlib.%ZLIB_VERSION%.nupkg -Source https://api.nuget.org/v3/index.json
+:nuget push epsitec-openssl.%OPENSSL_WINDOWS_VERSION%.nupkg -Source https://api.nuget.org/v3/index.json
+:nuget push epsitec-zlib.%ZLIB_VERSION%.nupkg -Source https://api.nuget.org/v3/index.json
 
 REM copy and commit grpc package to the zou.chicken repository (> 250 MB)
 set /a GRPC_OLD_PKG_VERSION=%GRPC_PKG_VERSION%-1
@@ -36,10 +36,10 @@ git -C ../../zou.chicken clean -xdf
 git -C ../../zou.chicken checkout master -f
 git -C ../../zou.chicken pull -f
 git -C ../../zou.chicken add epsitec-grpc.%GRPC_VERSION%.nupkg
-git -C ../../zou.chicken rm -f epsitec-grpc.1.22.0.%GRPC_OLD_PKG_VERSION%.nupkg
+git -C ../../zou.chicken rm -f epsitec-grpc.1.23.1.%GRPC_OLD_PKG_VERSION%.nupkg
 git -C ../../zou.chicken commit -m "Upgrade epsitec-grpc package to v%GRPC_VERSION%"
 git -C ../../zou.chicken push
 
 REM nuget setApiKey 
-REM nuget push epsitec-grpc.1.22.0.1.nupkg -Source https://api.nuget.org/v3/index.json
-REM nuget push epsitec-grpc.1.22.0.1.nupkg -Source http://nuget.epsitec.ch/ Spq35aUw.330_pqEgM
+REM nuget push epsitec-grpc.%GRPC_VERSION%.nupkg -Source https://api.nuget.org/v3/index.json
+REM nuget push epsitec-grpc.%GRPC_VERSION%.nupkg -Source http://nuget.epsitec.ch/ Spq35aUw.330_pqEgM
