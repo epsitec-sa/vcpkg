@@ -6,7 +6,7 @@ REM in the port CONTROL files too.
 set OPENSSL_WINDOWS_VERSION=1.0.2.4
 set ZLIB_VERSION=1.2.11.8
 set GRPC_PKG_VERSION=1
-set GRPC_VERSION=1.23.1.%GRPC_PKG_VERSION%
+set GRPC_VERSION=1.26.0.%GRPC_PKG_VERSION%
 
 REM remove previous builds
 rd /s /q installed
@@ -30,7 +30,7 @@ REM publish zlib and openssl-windows packages on nuget.org repository
 :nuget push epsitec-zlib.%ZLIB_VERSION%.nupkg -Source https://api.nuget.org/v3/index.json
 
 REM copy and commit grpc package to the zou.chicken repository (> 250 MB)
-set /a GRPC_OLD_PKG_VERSION=%GRPC_PKG_VERSION%-1
+REM set /a GRPC_OLD_PKG_VERSION=%GRPC_PKG_VERSION%-1
 copy epsitec-grpc.%GRPC_VERSION%.nupkg ..\..\zou.chicken
 git -C ../../zou.chicken clean -xdf
 git -C ../../zou.chicken checkout master -f
